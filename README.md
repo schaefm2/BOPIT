@@ -1,2 +1,2 @@
 # BOPIT
-Repo back up for bopit code 
+This repository contains the tutorial pdf and code for a BOPit glove
