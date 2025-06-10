@@ -38,8 +38,9 @@ void setup() {
   digitalWrite(buttonPin, HIGH);
 
   endTime = millis() + 5000;
+
+  analogWrite(flexPin, 200);
   
-  showBop();
   delay(1000);
   Serial.begin(9600);
 }
@@ -54,21 +55,21 @@ void loop() {
     Serial.print("Action: ");
     Serial.println(action);
     actionChose = true;
-    action = 1;
     playActionSound();
 
     // reduce time for next action
-    time = time - 400;
-    endTime = millis() + time;
+    time = time - 10;
+    endTime = millis() + time ;
   }
 
   // ran out of time
-  if (millis() >= endTime){
-    endGame = true;
-  }
+  // if (millis() >= endTime || endGame){
+  //   showEnd();
+  //   return;
+  // }
 
   // end condition
-  if(time < 0 || endGame){
+  if(time < 500){
     Serial.println("YOU WIN");
     playWinningSong();
     return;
@@ -81,14 +82,20 @@ void loop() {
   // delay(500);
 }
 
+void showEnd(){
+  pixels.fill(pixels.Color(255, 0, 0));
+  pixels.show();
+  delay(200);
+  pixels.clear();
+  pixels.show();
+  delay(200);
+}
+
 void showLeds(){
   lights = map(endTime - millis(), 0, time, 0, 8);
 
-  Serial.print("LIGHTS: ");
-  Serial.println(lights);
-
   for(int i = 0; i < lights; i++){
-    pixels.setPixelColor(i, pixels.Color(0, 120, 0));
+    pixels.setPixelColor(i, pixels.Color(0, 255, 0));
   }
 
   pixels.show();
@@ -97,9 +104,12 @@ void showLeds(){
 void bend(){
   flexValue = analogRead(flexPin);
 
-  // trigger
-  if (flexPin > 700){
+  Serial.print("Bend val: ");
+  Serial.println(flexValue);
 
+  // trigger
+  if (flexValue > 300){
+    Serial.println("BEND triggered");
     if(action == 0){
       showBend();
     }      
@@ -121,6 +131,7 @@ void shake(){
 
   // triggered
   if (tiltRate > 5){
+    Serial.println("shake triggered");
     tiltRate = 0;
     if(action == 1){
       showShake();
@@ -137,8 +148,9 @@ void bop(){
   Serial.print("Bop value: ");
   Serial.println(buttonValue);
 
-  // triggered
+  // // triggered
   if(buttonValue == LOW){
+    Serial.println("BOP TRIGGERED");
     if(action == 2){
       showBop();
     }
@@ -151,11 +163,15 @@ void bop(){
 
 void showBend(){
   // fill green
+  
+  endTime += 150 * 8;
   for(int i = 8; i >= 0; i--){
     pixels.setPixelColor(i, pixels.Color(0, 120, 0));
     pixels.show();
     delay(150);
   }
+
+  endTime += 200*2*3;
 
   // blink purple 3 times
   for(int j = 0; j < 3; j++){
@@ -171,6 +187,7 @@ void showBend(){
 }
 
 void showShake(){
+  endTime += 200*8;
   // go one way
   for(int i=0;i<8;i++){
     pixels.setPixelColor(i, pixels.Color(250, 0, 0));
@@ -182,6 +199,8 @@ void showShake(){
 		pixels.show();
 		delay(200);
 	} 
+  
+  endTime += 200*8;
 
   // go the other
 	for(int i=8;i>0;i--){
@@ -197,6 +216,7 @@ void showShake(){
 }
 
 void showBop(){
+  endTime += 200*2*8; 
   //  flash green 3 times quickly
   for(int i = 0; i < 3; i++){
     pixels.fill(pixels.Color(0, 255, 0));
